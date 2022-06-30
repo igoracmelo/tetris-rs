@@ -39,31 +39,17 @@ enum Tile {
     // L2,
 }
 
-// enum BlockShape {
-//     Share([[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]]),
-//         2 => [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
-// }
-
 #[derive(Clone)]
 struct Block {
     x: u16,
     y: u16,
     height: u16,
-    // symbol: StyledContent<char>,
-    // shape: u16,
     fixed: bool,
     tile: Tile,
-    // shape: &[[u8; 4]; 4],
 }
 
 impl Block {
     fn new(x: u16, y: u16, tile: Tile) -> Block {
-        // for i in 0..4 {
-        //     let has_piece = false;
-        //     for j in 0..4 {
-        //         if
-        //     }
-        // }
         Block {
             x,
             y,
@@ -82,7 +68,7 @@ struct Game {
     // tiles: Vec<Tile>,
     screen: Vec<Vec<Tile>>,
     stdout: Stdout,
-    current_block: Option<Block>,
+    current_block: Block,
     shapes: Vec<[[u8; 4]; 4]>,
     // blocks: Vec<Block>,
 }
@@ -95,7 +81,6 @@ impl Game {
 
         let mut screen = Vec::new();
         for _ in 0..height {
-            // let row = screen[l];
             let mut row = Vec::new();
             for _ in 0..width {
                 row.push(Tile::Empty);
@@ -110,7 +95,13 @@ impl Game {
             offset_y,
             stdout,
             screen,
-            current_block: None,
+            current_block: Block {
+                x: 0,
+                y: 0,
+                height: 0,
+                tile: Tile::Empty,
+                fixed: false,
+            },
             shapes: Vec::new(),
             // blocks: Vec::new(),
         }
@@ -139,25 +130,6 @@ impl Game {
         Ok(())
     }
 
-    // fn add_block(&mut self, tile: Tile, l: u16, c: u16) {
-    //     let block = self.shapes[tile.clone() as usize];
-    //     for i in 0..4 {
-    //         for j in 0..4 {
-    //             if block[i][j] == 1 {
-    //                 // game.screen[l as usize][c as usize + j as usize] = Tile::Wall;
-    //                 self.screen[i + l as usize][j + c as usize] = tile.clone();
-    //             }
-    //         }
-    //     }
-
-    //     self.current_block = Some(Block {
-    //         x: c,
-    //         y: l,
-    //         tile,
-    //         // symbol: get_tile_char(&tile),
-    //     });
-    // }
-
     fn add_block(&mut self, mut block: Block) {
         // let block_copy = block.clone();
         let mut height = 0;
@@ -172,28 +144,22 @@ impl Game {
         }
 
         block.height = height;
-        self.current_block = Some(block);
+        self.current_block = block;
+        // self.current_block = Some(block);
         self._add_block_to_screen();
         // let block = self.shapmax!();es[tile.clone() as usize];
     }
 
     fn _add_block_to_screen(&mut self) {
-        // self.current_block = Some(block);
-        if let Some(block) = &self.current_block {
-            // let block_copy = block.clone();
-
-            let shape = self.shapes[block.tile.clone() as usize];
-            for i in 0..4 {
-                for j in 0..4 {
-                    if shape[i][j] == 1 {
-                        // game.screen[l as usize][c as usize + j as usize] = Tile::Wall;
-                        self.screen[i + block.y as usize][j + block.x as usize] =
-                            block.tile.clone();
-                    }
+        let block = &self.current_block;
+        let shape = self.shapes[block.tile.clone() as usize];
+        for i in 0..4 {
+            for j in 0..4 {
+                if shape[i][j] == 1 {
+                    self.screen[i + block.y as usize][j + block.x as usize] = block.tile.clone();
                 }
             }
         }
-        // let block = self.shapes[tile.clone() as usize];
     }
 
     // fn start_handling_events(self) -> Result<()> {
@@ -209,42 +175,26 @@ impl Game {
     // }
 
     fn _move_block(&mut self, x: i16, y: i16) {
-        // self.clear_block();
-        // self.add_block(block.clone());
-        if let Some(block) = &mut self.current_block {
-            let bottom_y = (block.y + block.height) as usize;
-            if !block.fixed && bottom_y < self.screen.len() - 1 {
-                // println!("{}", block.y);
-                // println!("{}", self.screen.len());
-                // block.x += x;
-                // block.y += y;
-                block.x = block.x.wrapping_add(x as u16);
-                block.y = block.y.wrapping_add(y as u16);
-            } else {
-                block.fixed = true;
-                // self.current_block = None;
-            }
+        let block = &mut self.current_block;
+        let bottom_y = (block.y + block.height) as usize;
+        if !block.fixed && bottom_y < self.screen.len() - 1 {
+            block.x = block.x.wrapping_add(x as u16);
+            block.y = block.y.wrapping_add(y as u16);
+        } else {
+            block.fixed = true;
         }
     }
 
     fn _clear_block(&mut self) {
-        if let Some(block) = &mut self.current_block {
-            for l in 0..4 {
-                for c in 0..4 {
-                    let shape = &self.shapes[block.tile.clone() as usize];
-                    if shape[l as usize][c as usize] == 1 {
-                        self.screen[l + block.y as usize][c + block.x as usize] = Tile::Empty;
-                    }
+        let block = &self.current_block;
+        for l in 0..4 {
+            for c in 0..4 {
+                let shape = &self.shapes[block.tile.clone() as usize];
+                if shape[l as usize][c as usize] == 1 {
+                    self.screen[l + block.y as usize][c + block.x as usize] = Tile::Empty;
                 }
             }
-            // block.y += 1;
         }
-
-        // if let Some(_) = self.current_block {
-        //     todo!()
-        // } else {
-        //     todo!()
-        // }
     }
 
     fn move_block(&mut self, x: i16, y: i16) {
@@ -255,7 +205,6 @@ impl Game {
 
     fn update(&mut self) {
         self.move_block(0, 1);
-        // self.current_block.y += 1;
     }
 
     fn on_keypress(&mut self, event: &KeyEvent) {
@@ -279,15 +228,6 @@ impl Game {
     }
 }
 
-//  Empty => " ",
-//  Wall => "█",
-//  Line => "│",
-//  Square => "┼",
-//  S1 => "┌",
-//  S2 => "┐",
-//  L1 => "└",
-//  L2 => "┘",
-
 fn get_tile_char(tile: &Tile) -> StyledContent<char> {
     match tile {
         Tile::Empty => ' '.black(),
@@ -305,20 +245,6 @@ fn main() -> Result<()> {
     terminal::enable_raw_mode()?;
     let stdout = stdout();
     let mut game = Game::new(16, 18, stdout);
-    //     let mut game = Game {
-    //     width: 16,
-    //     height: 18,
-    //     screen: Vec::new(),
-    //     offset_x: 0,
-    //     offset_y: 0,
-    //     stdout,
-    // };
-
-    // let blocks = [
-    //     // [],
-    //     ,
-    //     ,
-    // ];
 
     game.shapes
         .push([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]);
@@ -343,27 +269,8 @@ fn main() -> Result<()> {
 
     game.add_block(Block::new(5, 3, Tile::Line));
     game.add_block(Block::new(0, 7, Tile::Square));
-    //     Block {
-    //     x: 0,
-    //     y: 7,
-    //     height: 2,
-    //     tile: Tile::Square,
-    // });
 
-    // handle_events()?;
-
-    // thread::spawn(move || game.start_handling_events());
-
-    // let mut l = 1;
     loop {
-        // match read()? {
-        //     Event::Key(event) => on_keypress(&event),
-        //     _ => {}
-        // }
-
-        // game.add_block(&blocks[1], Tile::Line, l, 5);
-        // l += 1;
-
         if poll(Duration::from_millis(30))? {
             if let Event::Key(event) = read()? {
                 game.on_keypress(&event);
@@ -375,36 +282,3 @@ fn main() -> Result<()> {
         }
     }
 }
-
-// fn draw(game: &Game, stdout: &mut Stdout) -> Result<()> {
-//     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
-//     for l in 0..game.height {
-//         for c in 0..game.width {
-//             let tile = &game.screen[l as usize][c as usize];
-//             let char = get_tile_char(&tile);
-
-//             queue!(
-//                 stdout,
-//                 cursor::MoveTo(c + game.offset_x, l + game.offset_y),
-//                 style::PrintStyledContent(char.dark_grey())
-//             )?;
-//             // if c == 0 || c == width - 1 || l == height - 1 {
-//             //     // stdout.queue()?.queue()?;
-//             // }
-//         }
-//     }
-//     // queue!(
-//     //     stdout,
-//     //     cursor::MoveTo(offset_x + 5, offset_y),
-//     //     style::PrintStyledContent("#".red()),
-//     //     cursor::MoveTo(offset_x + 5, offset_y + 1),
-//     //     style::PrintStyledContent("#".red()),
-//     //     cursor::MoveTo(offset_x + 6, offset_y + 1),
-//     //     style::PrintStyledContent("#".red()),
-//     //     cursor::MoveTo(offset_x + 6, offset_y + 2),
-//     //     style::PrintStyledContent("#".red()),
-//     // )?;
-//     stdout.queue(Print("\n".repeat(game.offset_y.into())))?;
-//     stdout.flush()?;
-//     Ok(())
-// }
