@@ -33,10 +33,10 @@ enum Tile {
     Wall,
     Line,
     Square,
-    S1,
-    S2,
-    L1,
-    L2,
+    // S1,
+    // S2,
+    // L1,
+    // L2,
 }
 
 // enum BlockShape {
@@ -294,10 +294,10 @@ fn get_tile_char(tile: &Tile) -> StyledContent<char> {
         Tile::Wall => '█'.dark_grey(),
         Tile::Line => '█'.red(),
         Tile::Square => '█'.yellow(),
-        Tile::S1 => '┌'.green(),
-        Tile::S2 => '┐'.magenta(),
-        Tile::L1 => '└'.cyan(),
-        Tile::L2 => '┘'.white(),
+        // Tile::S1 => '┌'.green(),
+        // Tile::S2 => '┐'.magenta(),
+        // Tile::L1 => '└'.cyan(),
+        // Tile::L2 => '┘'.white(),
     }
 }
 
